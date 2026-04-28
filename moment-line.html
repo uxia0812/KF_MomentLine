@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moment & Line — Fan Image Caption Battle</title>
+<style>
+  :root {
+    --bg: #0f0f14;
+    --surface: #1a1a24;
+    --surface2: #22222f;
+    --border: #2e2e42;
+    --accent: #c084fc;
+    --accent2: #f472b6;
+    --accent3: #60a5fa;
+    --text: #f0f0f8;
+    --text-sub: #8888aa;
+    --text-muted: #555570;
+    --card-bg: #1e1e2c;
+    --hot: #fb923c;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* ── TOP NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(15,15,20,0.85); backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; height: 56px;
+  }
+  .logo { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .logo em { color: var(--accent2); font-style: normal; }
+  nav .nav-right { display: flex; gap: 10px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: all .18s; text-decoration: none; }
+  .btn-ghost { background: var(--surface2); color: var(--text-sub); }
+  .btn-ghost:hover { background: var(--border); color: var(--text); }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; box-shadow: 0 2px 12px rgba(192,132,252,0.35); }
+  .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+
+  /* ── HERO BANNER ── */
+  .hero {
+    background: linear-gradient(135deg, #1a0a2e 0%, #0f0f14 50%, #1a0a1a 100%);
+    padding: 56px 20px 40px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 40%, rgba(192,132,252,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 60%, rgba(244,114,182,0.10) 0%, transparent 55%);
+  }
+  .hero-badge {
+    display: inline-block; padding: 4px 14px; border-radius: 999px;
+    background: rgba(192,132,252,0.15); border: 1px solid rgba(192,132,252,0.3);
+    color: var(--accent); font-size: 0.78rem; font-weight: 700; letter-spacing: .5px;
+    margin-bottom: 16px; position: relative;
+  }
+  .hero h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 900; line-height: 1.1; position: relative; margin-bottom: 12px; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--text-sub); font-size: 0.95rem; max-width: 480px; margin: 0 auto 28px; position: relative; line-height: 1.6; }
+  .hero-cta { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; }
+  .hero-stats { display: flex; gap: 28px; justify-content: center; margin-top: 36px; position: relative; }
+  .stat-item { text-align: center; }
+  .stat-num { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; letter-spacing: .5px; text-transform: uppercase; }
+
+  /* ── FILTERS ── */
+  .filters-wrap {
+    padding: 16px 16px 0;
+    position: sticky; top: 56px; z-index: 90;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
+  .filter-tabs::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0; padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+    cursor: pointer; border: 1.5px solid var(--border); background: var(--surface);
+    color: var(--text-sub); transition: all .15s; user-select: none;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: rgba(192,132,252,0.15); border-color: var(--accent); color: var(--accent); }
+  .chip.hot { border-color: var(--hot); color: var(--hot); }
+  .chip.hot.active { background: rgba(251,146,60,0.12); }
+
+  /* ── MAIN LAYOUT ── */
+  .main-wrap { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; padding: 20px 16px 80px; }
+  .feed { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+  .sidebar { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
+  @media(max-width: 900px) { .sidebar { display: none; } }
+
+  /* ── MOMENT CARD ── */
+  .moment-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; transition: border-color .18s;
+  }
+  .moment-card:hover { border-color: rgba(192,132,252,0.4); }
+
+  .card-top { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; }
+  .user-info { display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .user-meta { display: flex; flex-direction: column; }
+  .user-name { font-size: 0.85rem; font-weight: 700; }
+  .post-time { font-size: 0.72rem; color: var(--text-muted); }
+  .card-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tag { font-size: 0.7rem; padding: 3px 9px; border-radius: 999px; font-weight: 600; }
+  .tag-group { background: rgba(96,165,250,0.12); color: var(--accent3); }
+  .tag-ship { background: rgba(244,114,182,0.12); color: var(--accent2); }
+  .tag-vibe { background: rgba(192,132,252,0.12); color: var(--accent); }
+
+  /* image */
+  .card-image { position: relative; background: #0a0a10; }
+  .card-image img { width: 100%; max-height: 480px; object-fit: cover; display: block; }
+  .img-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+    padding: 40px 16px 14px;
+  }
+  .hint-label { font-size: 0.7rem; color: rgba(255,255,255,0.5); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 4px; }
+  .hint-text { font-size: 0.85rem; color: rgba(255,255,255,0.85); font-style: italic; }
+
+  /* best line */
+  .best-line-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .best-label { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; color: var(--hot); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+  .best-label svg { width: 14px; height: 14px; }
+  .best-line {
+    background: linear-gradient(135deg, rgba(251,146,60,0.08), rgba(244,114,182,0.06));
+    border: 1px solid rgba(251,146,60,0.2); border-radius: var(--radius-sm);
+    padding: 12px 14px;
+  }
+  .best-line-text { font-size: 1rem; font-weight: 600; color: var(--text); line-height: 1.5; margin-bottom: 6px; quotes: '"' '"'; }
+  .best-line-text::before { content: open-quote; color: var(--accent2); }
+  .best-line-text::after { content: close-quote; color: var(--accent2); }
+  .best-line-meta { display: flex; align-items: center; justify-content: space-between; }
+  .best-by { font-size: 0.72rem; color: var(--text-muted); }
+  .best-votes { display: flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: 700; color: var(--hot); }
+
+  /* lines list */
+  .lines-section { padding: 10px 16px 14px; }
+  .lines-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .lines-title { font-size: 0.78rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .5px; }
+  .see-all { font-size: 0.75rem; color: var(--accent); cursor: pointer; font-weight: 600; }
+  .see-all:hover { text-decoration: underline; }
+  .line-item {
+    display: flex; align-items: flex-start; gap: 10px; padding: 9px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .line-item:last-child { border-bottom: none; }
+  .line-rank { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); width: 18px; flex-shrink: 0; padding-top: 1px; }
+  .line-rank.r1 { color: var(--hot); }
+  .line-rank.r2 { color: var(--accent); }
+  .line-rank.r3 { color: var(--accent2); }
+  .line-text { font-size: 0.88rem; color: var(--text); line-height: 1.4; flex: 1; }
+  .line-user { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+  .vote-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: none; border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 5px 8px; cursor: pointer; color: var(--text-muted); transition: all .15s;
+    flex-shrink: 0;
+  }
+  .vote-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .vote-btn.voted { border-color: var(--accent2); background: rgba(244,114,182,0.1); color: var(--accent2); }
+  .vote-btn svg { width: 14px; height: 14px; }
+  .vote-count { font-size: 0.72rem; font-weight: 700; }
+
+  /* write input */
+  .write-section { padding: 10px 16px 14px; border-top: 1px solid var(--border); }
+  .write-box {
+    display: flex; gap: 8px; align-items: flex-end;
+    background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 12px; transition: border-color .15s;
+  }
+  .write-box:focus-within { border-color: var(--accent); }
+  .write-box textarea {
+    flex: 1; background: none; border: none; outline: none; resize: none;
+    color: var(--text); font-size: 0.88rem; line-height: 1.5; font-family: inherit;
+    max-height: 80px; min-height: 20px;
+  }
+  .write-box textarea::placeholder { color: var(--text-muted); }
+  .send-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 8px; width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0; transition: opacity .15s;
+  }
+  .send-btn:hover { opacity: .85; }
+  .send-btn svg { width: 16px; height: 16px; color: #fff; }
+
+  /* card bottom actions */
+  .card-actions { display: flex; align-items: center; gap: 4px; padding: 10px 16px; border-top: 1px solid var(--border); }
+  .action-btn {
+    display: flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 8px;
+    background: none; border: none; color: var(--text-sub); font-size: 0.8rem; cursor: pointer;
+    transition: all .15s; font-family: inherit; font-weight: 600;
+  }
+  .action-btn:hover { background: var(--surface2); color: var(--text); }
+  .action-btn svg { width: 15px; height: 15px; }
+  .action-btn.liked { color: var(--accent2); }
+  .action-btn.liked svg { fill: var(--accent2); }
+  .action-spacer { flex: 1; }
+  .share-btn {
+    display: flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 999px;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text-sub);
+    font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all .15s;
+  }
+  .share-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .share-btn svg { width: 13px; height: 13px; }
+
+  /* ── SIDEBAR WIDGETS ── */
+  .widget { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .widget-title { font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: var(--text-sub); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .widget-title svg { width: 14px; height: 14px; }
+
+  .trending-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; }
+  .trending-item:last-child { border-bottom: none; }
+  .trend-thumb { width: 44px; height: 44px; border-radius: 8px; background: var(--surface2); flex-shrink: 0; overflow: hidden; }
+  .trend-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .trend-info { flex: 1; min-width: 0; }
+  .trend-title { font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .trend-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+  .trend-rank { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); width: 18px; text-align: right; }
+
+  .upload-widget { text-align: center; }
+  .upload-icon { width: 48px; height: 48px; margin: 0 auto 10px; background: rgba(192,132,252,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+  .upload-icon svg { width: 24px; height: 24px; color: var(--accent); }
+  .upload-widget p { font-size: 0.82rem; color: var(--text-sub); margin-bottom: 12px; line-height: 1.5; }
+
+  .leaderboard-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .leaderboard-item:last-child { border-bottom: none; }
+  .lb-avatar { width: 32px; height: 32px; border-radius: 50%; font-weight: 700; font-size: 0.78rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .lb-info { flex: 1; }
+  .lb-name { font-size: 0.82rem; font-weight: 700; }
+  .lb-wins { font-size: 0.7rem; color: var(--text-muted); }
+  .lb-score { font-size: 0.88rem; font-weight: 800; color: var(--accent); }
+
+  /* ── UPLOAD MODAL ── */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200;
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .modal-backdrop.open { opacity: 1; pointer-events: all; }
+  @media(min-width: 600px) { .modal-backdrop { align-items: center; } }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius) var(--radius) 0 0; width: 100%; max-width: 560px;
+    padding: 24px 20px 32px; transform: translateY(40px); transition: transform .25s;
+    max-height: 90vh; overflow-y: auto;
+  }
+  @media(min-width: 600px) { .modal { border-radius: var(--radius); transform: scale(0.95); } }
+  .modal-backdrop.open .modal { transform: translateY(0) scale(1); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-size: 1.1rem; font-weight: 800; }
+  .close-btn { background: var(--surface2); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-sub); }
+  .close-btn:hover { color: var(--text); }
+  .close-btn svg { width: 16px; height: 16px; }
+
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 32px;
+    text-align: center; cursor: pointer; transition: all .15s; margin-bottom: 16px;
+  }
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: rgba(192,132,252,0.05); }
+  .drop-zone svg { width: 32px; height: 32px; color: var(--text-muted); margin-bottom: 8px; }
+  .drop-zone p { font-size: 0.88rem; color: var(--text-sub); }
+  .drop-zone span { color: var(--accent); font-weight: 600; }
+
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 0.78rem; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display: block; letter-spacing: .3px; }
+  .form-input {
+    width: 100%; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 12px; color: var(--text); font-size: 0.88rem; font-family: inherit;
+    outline: none; transition: border-color .15s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--text-muted); }
+  .tag-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .tag-chip-pick {
+    padding: 5px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; border: 1.5px solid var(--border); background: var(--surface); color: var(--text-sub); transition: all .15s;
+  }
+  .tag-chip-pick:hover { border-color: var(--accent); color: var(--accent); }
+  .tag-chip-pick.sel { background: rgba(192,132,252,0.15); border-color: var(--accent); color: var(--accent); }
+
+  /* template pills */
+  .templates { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .tpl {
+    padding: 5px 11px; border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-sub);
+    transition: all .15s;
+  }
+  .tpl:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ── SHARE MODAL ── */
+  .share-modal { max-width: 400px; }
+  .card-preview {
+    border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 16px;
+    position: relative; background: #111;
+  }
+  .card-preview img { width: 100%; display: block; max-height: 220px; object-fit: cover; }
+  .card-preview-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.92), transparent);
+    padding: 28px 14px 14px;
+  }
+  .card-preview-line { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .card-preview-by { font-size: 0.72rem; color: rgba(255,255,255,0.5); }
+  .watermark { font-size: 0.65rem; color: rgba(255,255,255,0.3); margin-top: 2px; }
+  .share-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .share-option {
+    display: flex; align-items: center; gap: 8px; padding: 12px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--text-sub);
+    transition: all .15s;
+  }
+  .share-option:hover { border-color: var(--accent); color: var(--text); }
+  .share-option svg { width: 18px; height: 18px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    padding: 10px 20px; font-size: 0.85rem; font-weight: 600; z-index: 999;
+    transition: transform .25s; box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── MOBILE FAB ── */
+  .fab {
+    position: fixed; bottom: 20px; right: 20px; z-index: 150;
+    width: 54px; height: 54px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: none; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(192,132,252,0.45);
+    cursor: pointer; border: none; color: #fff;
+    transition: transform .15s;
+  }
+  .fab:hover { transform: scale(1.08); }
+  .fab svg { width: 22px; height: 22px; }
+  @media(max-width: 900px) { .fab { display: flex; } }
+
+  /* ── SECTION DIVIDER ── */
+  .section-label {
+    display: flex; align-items: center; gap: 10px; color: var(--text-muted);
+    font-size: 0.72rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── RESPONSIVE TWEAKS ── */
+  @media(max-width: 600px) {
+    .hero { padding: 40px 16px 28px; }
+    .hero-stats { gap: 20px; }
+    nav { padding: 0 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Moment<span>&</span><em>Line</em></div>
+  <div class="nav-right">
+    <button class="btn btn-ghost">Log in</button>
+    <button class="btn btn-primary" onclick="openUpload()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Post
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">✦ Fan Caption Battle</div>
+  <h1>이 장면에 딱 맞는<br><span>한 줄</span>은?</h1>
+  <p>좋아하는 이미지를 올리고, 가장 어울리는 한 문장을 경쟁하세요. 최고 대사는 카드로 저장·공유!</p>
+  <div class="hero-cta">
+    <button class="btn btn-primary" onclick="openUpload()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      이미지 업로드
+    </button>
+    <button class="btn btn-ghost">Hot Moments 보기</button>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item"><div class="stat-num">12.4K</div><div class="stat-label">Moments</div></div>
+    <div class="stat-item"><div class="stat-num">89.2K</div><div class="stat-label">Lines</div></div>
+    <div class="stat-item"><div class="stat-num">3.1K</div><div class="stat-label">Fandoms</div></div>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters-wrap">
+  <div class="filter-tabs">
+    <div class="chip hot active" onclick="setFilter(this)">🔥 Hot</div>
+    <div class="chip" onclick="setFilter(this)">✨ New</div>
+    <div class="chip" onclick="setFilter(this)">💜 K-POP</div>
+    <div class="chip" onclick="setFilter(this)">🎭 Anime</div>
+    <div class="chip" onclick="setFilter(this)">📺 Drama</div>
+    <div class="chip" onclick="setFilter(this)">❤️‍🔥 Ship</div>
+    <div class="chip" onclick="setFilter(this)">😂 Crack</div>
+    <div class="chip" onclick="setFilter(this)">😢 Angst</div>
+    <div class="chip" onclick="setFilter(this)">💫 Fluff</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <div class="feed">
+
+    <!-- CARD 1 -->
+    <div class="moment-card">
+      <div class="card-top">
+        <div class="user-info">
+          <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#c084fc)">JY</div>
+          <div class="user-meta">
+            <span class="user-name">@jeongyeon_edit</span>
+            <span class="post-time">3시간 전</span>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-group">#TWICE</span>
+          <span class="tag tag-ship">#JeongyeonYume</span>
+          <span class="tag tag-vibe">#Fluff</span>
+        </div>
+      </div>
+      <div class="card-image">
+        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&q=80" alt="moment image" onerror="this.style.height='280px';this.style.background='linear-gradient(135deg,#1a0a2e,#2d1b4e)'">
+        <div class="img-overlay">
+          <div class="hint-label">대사 힌트</div>
+          <div class="hint-text">비 오는 날, 우산 없이 마주쳤을 때</div>
+        </div>
+      </div>
+      <div class="best-line-section">
+        <div class="best-label">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Best Line · 1위
+        </div>
+        <div class="best-line">
+          <div class="best-line-text">우산 없어? 잘됐다, 그럼 핑계 생겼네.</div>
+          <div class="best-line-meta">
+            <span class="best-by">Best Line by @moonwriter_k</span>
+            <span class="best-votes">
+              <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              847
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="lines-section">
+        <div class="lines-header">
+          <span class="lines-title">전체 대사 (142)</span>
+          <span class="see-all">모두 보기</span>
+        </div>
+        <div class="line-item">
+          <span class="line-rank r1">1</span>
+          <div style="flex:1"><div class="line-text">우산 없어? 잘됐다, 그럼 핑계 생겼네.</div><div class="line-user">@moonwriter_k</div></div>
+          <button class="vote-btn voted" onclick="toggleVote(this)">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span class="vote-count">847</span>
+          </button>
+        </div>
+        <div class="line-item">
+          <span class="line-rank r2">2</span>
+          <div style="flex:1"><div class="line-text">같이 맞자. 이런 날은 같이 맞아야지.</div><div class="line-user">@rainy_shipper</div></div>
+          <button class="vote-btn" onclick="toggleVote(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span class="vote-count">593</span>
+          </button>
+        </div>
+        <div class="line-item">
+          <span class="line-rank r3">3</span>
+          <div style="flex:1"><div class="line-text">하… 이러면 안 되는데. 귀여워 죽겠잖아.</div><div class="line-user">@fluffmaster99</div></div>
+          <button class="vote-btn" onclick="toggleVote(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span class="vote-count">421</span>
+          </button>
+        </div>
+      </div>
+      <div class="write-section">
+        <div class="write-box">
+          <textarea placeholder="이 장면에 가장 어울리는 한 문장을 써보세요…" rows="1" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="submitLine(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="action-btn" onclick="toggleLike(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          2.3K
+        </button>
+        <button class="action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          142
+        </button>
+        <div class="action-spacer"></div>
+        <button class="share-btn" onclick="openShare()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          카드로 저장
+        </button>
+      </div>
+    </div>
+
+    <!-- CARD 2 -->
+    <div class="moment-card">
+      <div class="card-top">
+        <div class="user-info">
+          <div class="avatar" style="background:linear-gradient(135deg,#be185d,#f472b6)">WS</div>
+          <div class="user-meta">
+            <span class="user-name">@wolfstar_art</span>
+            <span class="post-time">7시간 전</span>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-group">#HP</span>
+          <span class="tag tag-ship">#Wolfstar</span>
+          <span class="tag tag-vibe">#Angst</span>
+        </div>
+      </div>
+      <div class="card-image">
+        <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&q=80" alt="moment image" onerror="this.style.height='280px';this.style.background='linear-gradient(135deg,#1a0014,#2d0028)'">
+        <div class="img-overlay">
+          <div class="hint-label">대사 힌트</div>
+          <div class="hint-text">Marauders 시절, 달 뜨기 전 마지막 밤</div>
+        </div>
+      </div>
+      <div class="best-line-section">
+        <div class="best-label">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Best Line · 1위
+        </div>
+        <div class="best-line">
+          <div class="best-line-text">내일은 기억 못 할 거야. 그러니까 오늘만큼은, 네 곁에 있을게.</div>
+          <div class="best-line-meta">
+            <span class="best-by">Best Line by @angst_dealer</span>
+            <span class="best-votes">
+              <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              1.2K
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="lines-section">
+        <div class="lines-header">
+          <span class="lines-title">전체 대사 (89)</span>
+          <span class="see-all">모두 보기</span>
+        </div>
+        <div class="line-item">
+          <span class="line-rank r1">1</span>
+          <div style="flex:1"><div class="line-text">내일은 기억 못 할 거야. 그러니까 오늘만큼은, 네 곁에 있을게.</div><div class="line-user">@angst_dealer</div></div>
+          <button class="vote-btn" onclick="toggleVote(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span class="vote-count">1,247</span>
+          </button>
+        </div>
+        <div class="line-item">
+          <span class="line-rank r2">2</span>
+          <div style="flex:1"><div class="line-text">무서워? — 아니, 네가 떠날까봐 무서운 거야.</div><div class="line-user">@moony_sirius</div></div>
+          <button class="vote-btn" onclick="toggleVote(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span class="vote-count">834</span>
+          </button>
+        </div>
+      </div>
+      <div class="write-section">
+        <div class="templates">
+          <span class="tpl" onclick="fillTemplate(this, '너 때문에 심장이 ')">너 때문에 심장이…</span>
+          <span class="tpl" onclick="fillTemplate(this, '이제 놓치지 않을게.')">이제 놓치지 않을게</span>
+          <span class="tpl" onclick="fillTemplate(this, '바보야, 그게 사랑이잖아.')">사랑 고백</span>
+          <span class="tpl" onclick="fillTemplate(this, '(웃음) …아, 미치겠다.')">유머러스</span>
+        </div>
+        <div class="write-box">
+          <textarea placeholder="이 장면에 가장 어울리는 한 문장을 써보세요…" rows="1" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="submitLine(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="action-btn" onclick="toggleLike(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          4.1K
+        </button>
+        <button class="action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          89
+        </button>
+        <div class="action-spacer"></div>
+        <button class="share-btn" onclick="openShare()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          카드로 저장
+        </button>
+      </div>
+    </div>
+
+    <!-- CARD 3 -->
+    <div class="moment-card">
+      <div class="card-top">
+        <div class="user-info">
+          <div class="avatar" style="background:linear-gradient(135deg,#0369a1,#60a5fa)">KD</div>
+          <div class="user-meta">
+            <span class="user-name">@kdrama_caps</span>
+            <span class="post-time">12시간 전</span>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-group">#K-Drama</span>
+          <span class="tag tag-vibe">#Crack</span>
+          <span class="tag tag-vibe">#OOC</span>
+        </div>
+      </div>
+      <div class="card-image">
+        <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80" alt="moment image" onerror="this.style.height='280px';this.style.background='linear-gradient(135deg,#0a1628,#0f2040)'">
+        <div class="img-overlay">
+          <div class="hint-label">대사 힌트</div>
+          <div class="hint-text">재벌 CEO가 처음으로 편의점에서 삼각김밥을 사는 장면</div>
+        </div>
+      </div>
+      <div class="best-line-section">
+        <div class="best-label">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Best Line · 1위
+        </div>
+        <div class="best-line">
+          <div class="best-line-text">...이게 사람이 먹는 음식이야? (두 번째 손에 들고 있음)</div>
+          <div class="best-line-meta">
+            <span class="best-by">Best Line by @cracklord99</span>
+            <span class="best-votes">
+              <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              2.8K
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="lines-section">
+        <div class="lines-header">
+          <span class="lines-title">전체 대사 (214)</span>
+          <span class="see-all">모두 보기</span>
+        </div>
+        <div class="line-item">
+          <span class="line-rank r1">1</span>
+          <div style="flex:1"><div class="line-text">...이게 사람이 먹는 음식이야? (두 번째 손에 들고 있음)</div><div class="line-user">@cracklord99</div></div>
+          <button class="vote-btn" onclick="toggleVote(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span class="vote-count">2,847</span>
+          </button>
+        </div>
+        <div class="line-item">
+          <span class="line-rank r2">2</span>
+          <div style="flex:1"><div class="line-text">비서, 이걸 어떻게 뜯는 건가. (100원 동전 꺼냄)</div><div class="line-user">@drama_junkie</div></div>
+          <button class="vote-btn" onclick="toggleVote(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span class="vote-count">1,932</span>
+          </button>
+        </div>
+        <div class="line-item">
+          <span class="line-rank r3">3</span>
+          <div style="flex:1"><div class="line-text">맛있다. (표정: 0.0)</div><div class="line-user">@stoic_ceo_au</div></div>
+          <button class="vote-btn voted" onclick="toggleVote(this)">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span class="vote-count">1,441</span>
+          </button>
+        </div>
+      </div>
+      <div class="write-section">
+        <div class="write-box">
+          <textarea placeholder="이 장면에 가장 어울리는 한 문장을 써보세요…" rows="1" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="submitLine(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="action-btn liked" onclick="toggleLike(this)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          7.6K
+        </button>
+        <button class="action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          214
+        </button>
+        <div class="action-spacer"></div>
+        <button class="share-btn" onclick="openShare()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          카드로 저장
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /feed -->
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- Upload CTA -->
+    <div class="widget upload-widget">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <p>내가 만든 이미지, 좋아하는 장면을 올리고 팬들과 대사 배틀!</p>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="openUpload()">이미지 업로드</button>
+    </div>
+
+    <!-- Today's Hot -->
+    <div class="widget">
+      <div class="widget-title">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="color:var(--hot)"><path d="M12 2c0 0-6 5-6 11a6 6 0 0012 0c0-6-6-11-6-11zm0 16a4 4 0 01-4-4c0-2.5 1.5-4.8 4-7.5 2.5 2.7 4 5 4 7.5a4 4 0 01-4 4z"/></svg>
+        오늘의 Hot Moments
+      </div>
+      <div class="trending-item">
+        <div class="trend-thumb">
+          <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=88&q=60" onerror="this.parentElement.style.background='#2a1040'">
+        </div>
+        <div class="trend-info">
+          <div class="trend-title">#K-Drama · #Crack</div>
+          <div class="trend-meta">214 lines · 7.6K likes</div>
+        </div>
+        <div class="trend-rank" style="color:var(--hot)">🔥</div>
+      </div>
+      <div class="trending-item">
+        <div class="trend-thumb">
+          <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=88&q=60" onerror="this.parentElement.style.background='#200020'">
+        </div>
+        <div class="trend-info">
+          <div class="trend-title">#HP · #Wolfstar</div>
+          <div class="trend-meta">89 lines · 4.1K likes</div>
+        </div>
+        <div class="trend-rank" style="color:var(--accent)">2</div>
+      </div>
+      <div class="trending-item">
+        <div class="trend-thumb">
+          <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=88&q=60" onerror="this.parentElement.style.background='#1a0a2e'">
+        </div>
+        <div class="trend-info">
+          <div class="trend-title">#TWICE · #Fluff</div>
+          <div class="trend-meta">142 lines · 2.3K likes</div>
+        </div>
+        <div class="trend-rank" style="color:var(--accent2)">3</div>
+      </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="widget">
+      <div class="widget-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Best Line Writers
+      </div>
+      <div class="leaderboard-item">
+        <div class="lb-avatar" style="background:linear-gradient(135deg,#f59e0b,#fb923c)">👑</div>
+        <div class="lb-info"><div class="lb-name">@moonwriter_k</div><div class="lb-wins">이번 주 3회 1위</div></div>
+        <div class="lb-score">12.4K</div>
+      </div>
+      <div class="leaderboard-item">
+        <div class="lb-avatar" style="background:linear-gradient(135deg,#7c3aed,#c084fc)">A</div>
+        <div class="lb-info"><div class="lb-name">@angst_dealer</div><div class="lb-wins">이번 주 2회 1위</div></div>
+        <div class="lb-score">9.8K</div>
+      </div>
+      <div class="leaderboard-item">
+        <div class="lb-avatar" style="background:linear-gradient(135deg,#be185d,#f472b6)">C</div>
+        <div class="lb-info"><div class="lb-name">@cracklord99</div><div class="lb-wins">이번 주 2회 1위</div></div>
+        <div class="lb-score">8.1K</div>
+      </div>
+      <div class="leaderboard-item">
+        <div class="lb-avatar" style="background:linear-gradient(135deg,#0369a1,#60a5fa)">F</div>
+        <div class="lb-info"><div class="lb-name">@fluffmaster99</div><div class="lb-wins">이번 주 1회 1위</div></div>
+        <div class="lb-score">5.3K</div>
+      </div>
+    </div>
+
+    <!-- Popular Tags -->
+    <div class="widget">
+      <div class="widget-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        인기 태그
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#JeongyeonYume</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#Wolfstar</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#Fluff</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#Angst</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#Crack</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#KDrama</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#OOC</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#Spicy</span>
+      </div>
+    </div>
+
+  </aside>
+</div><!-- /main-wrap -->
+
+<!-- MOBILE FAB -->
+<button class="fab" onclick="openUpload()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- UPLOAD MODAL -->
+<div class="modal-backdrop" id="uploadModal" onclick="closeOnBackdrop(event,'uploadModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">✦ 새 Moment 올리기</span>
+      <button class="close-btn" onclick="closeModal('uploadModal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()"
+      ondragover="event.preventDefault();this.classList.add('dragover')"
+      ondragleave="this.classList.remove('dragover')"
+      ondrop="handleDrop(event)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <p>이미지를 드래그하거나 <span>클릭해서 업로드</span></p>
+      <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="previewFile(event)">
+    </div>
+    <div id="imgPreview" style="display:none;margin-bottom:14px">
+      <img id="previewImg" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">대상 그룹 / 캐릭터</label>
+      <input class="form-input" type="text" placeholder="예: TWICE, Harry Potter, BTS…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">커플링 / 유사연</label>
+      <input class="form-input" type="text" placeholder="예: JeongyeonYume, Wolfstar…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">분위기 태그</label>
+      <div class="tag-chips">
+        <span class="tag-chip-pick" onclick="this.classList.toggle('sel')">#Fluff</span>
+        <span class="tag-chip-pick" onclick="this.classList.toggle('sel')">#Angst</span>
+        <span class="tag-chip-pick" onclick="this.classList.toggle('sel')">#Crack</span>
+        <span class="tag-chip-pick" onclick="this.classList.toggle('sel')">#Spicy</span>
+        <span class="tag-chip-pick" onclick="this.classList.toggle('sel')">#설렘</span>
+        <span class="tag-chip-pick" onclick="this.classList.toggle('sel')">#OOC</span>
+        <span class="tag-chip-pick" onclick="this.classList.toggle('sel')">#AU</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">대사 힌트 (선택)</label>
+      <input class="form-input" type="text" placeholder="예: 비 오는 날, 우산 없이 마주쳤을 때">
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="submitUpload()">
+      업로드 & 대사 받기 시작!
+    </button>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="modal-backdrop" id="shareModal" onclick="closeOnBackdrop(event,'shareModal')">
+  <div class="modal share-modal">
+    <div class="modal-header">
+      <span class="modal-title">카드로 저장 & 공유</span>
+      <button class="close-btn" onclick="closeModal('shareModal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="card-preview">
+      <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=80" alt="preview" onerror="this.style.height='160px';this.style.background='#111'">
+      <div class="card-preview-overlay">
+        <div class="card-preview-line">"...이게 사람이 먹는 음식이야? (두 번째 손에 들고 있음)"</div>
+        <div class="card-preview-by">Best Line by @cracklord99</div>
+        <div class="watermark">✦ Moment&Line · #BunjangGlobal</div>
+      </div>
+    </div>
+    <div class="share-options">
+      <div class="share-option" onclick="showToast('X(트위터)로 공유 링크 복사!')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.254 5.622L18.244 2.25z"/></svg>
+        X (트위터)
+      </div>
+      <div class="share-option" onclick="showToast('Reddit 공유 링크 복사!')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
+        Reddit
+      </div>
+      <div class="share-option" onclick="showToast('Tumblr 공유 링크 복사!')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.563 24c-5.093 0-7.031-3.756-7.031-6.411V9.747H5.116V6.648c3.63-1.313 4.512-4.596 4.71-6.469C9.84.051 9.941 0 9.999 0h3.517v6.114h4.801v3.633h-4.82v7.47c.016 1.001.375 2.371 2.207 2.371h.09c.631-.02 1.486-.205 1.936-.419l1.156 3.425c-.436.636-2.4 1.374-4.306 1.406z"/></svg>
+        Tumblr
+      </div>
+      <div class="share-option" onclick="showToast('이미지 저장 완료! (워터마크 자동 삽입)')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        이미지 저장
+      </div>
+    </div>
+    <p style="font-size:0.72rem;color:var(--text-muted);text-align:center;margin-top:12px">워터마크 자동 삽입 · #BunjangGlobal 해시태그 포함</p>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // Filter chips
+  function setFilter(el) {
+    document.querySelectorAll('.filter-tabs .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // Vote toggle
+  function toggleVote(btn) {
+    const countEl = btn.querySelector('.vote-count');
+    const svgEl = btn.querySelector('svg');
+    let count = parseInt(countEl.textContent.replace(/,/g,''));
+    if (btn.classList.contains('voted')) {
+      btn.classList.remove('voted');
+      count--;
+      svgEl.setAttribute('fill','none');
+      svgEl.setAttribute('stroke','currentColor');
+      svgEl.setAttribute('stroke-width','2');
+    } else {
+      btn.classList.add('voted');
+      count++;
+      svgEl.setAttribute('fill','currentColor');
+      svgEl.removeAttribute('stroke');
+    }
+    countEl.textContent = count >= 1000 ? (count/1000).toFixed(1)+'K' : count.toLocaleString();
+  }
+
+  // Like toggle
+  function toggleLike(btn) {
+    btn.classList.toggle('liked');
+    const svg = btn.querySelector('svg');
+    if (btn.classList.contains('liked')) {
+      svg.setAttribute('fill','currentColor');
+      svg.removeAttribute('stroke');
+    } else {
+      svg.setAttribute('fill','none');
+      svg.setAttribute('stroke','currentColor');
+      svg.setAttribute('stroke-width','2');
+    }
+  }
+
+  // Textarea auto resize
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+
+  // Submit line
+  function submitLine(btn) {
+    const box = btn.closest('.write-box');
+    const ta = box.querySelector('textarea');
+    const text = ta.value.trim();
+    if (!text) { ta.focus(); return; }
+    const linesSection = btn.closest('.moment-card').querySelector('.lines-section');
+    const linesList = linesSection.querySelectorAll('.line-item');
+    const nextRank = linesList.length + 1;
+    const newItem = document.createElement('div');
+    newItem.className = 'line-item';
+    newItem.innerHTML = `
+      <span class="line-rank">${nextRank}</span>
+      <div style="flex:1"><div class="line-text">${text}</div><div class="line-user">@me</div></div>
+      <button class="vote-btn" onclick="toggleVote(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <span class="vote-count">0</span>
+      </button>`;
+    linesSection.appendChild(newItem);
+    ta.value = '';
+    ta.style.height = 'auto';
+    showToast('대사가 등록됐어요! 투표를 모아보세요 ✨');
+  }
+
+  // Template fill
+  function fillTemplate(el, text) {
+    const ta = el.closest('.moment-card').querySelector('textarea');
+    ta.value = text;
+    ta.focus();
+    autoResize(ta);
+  }
+
+  // Modal open/close
+  function openUpload() { document.getElementById('uploadModal').classList.add('open'); }
+  function openShare() { document.getElementById('shareModal').classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function closeOnBackdrop(e, id) { if (e.target.id === id) closeModal(id); }
+
+  // File upload preview
+  function previewFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.getElementById('previewImg').src = ev.target.result;
+      document.getElementById('imgPreview').style.display = 'block';
+      document.getElementById('dropZone').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropZone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        document.getElementById('previewImg').src = ev.target.result;
+        document.getElementById('imgPreview').style.display = 'block';
+        document.getElementById('dropZone').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // Upload submit
+  function submitUpload() {
+    closeModal('uploadModal');
+    showToast('모먼트가 업로드됐어요! 대사 배틀 시작 🎉');
+  }
+
+  // Toast
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>
