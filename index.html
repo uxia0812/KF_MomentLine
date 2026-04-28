@@ -1380,18 +1380,21 @@
   function initHomeCards() {
     document.querySelectorAll('.moment-card').forEach((card, idx) => {
       const key = CARD_KEYS[idx];
-      if (key) card.dataset.momentKey = key;
+      if (!key) return;
+      card.dataset.momentKey = key;
       // 4번째 이상 line-item 숨기기
-      const items = card.querySelectorAll('.line-item');
-      items.forEach((item, i) => { if (i >= 3) item.style.display = 'none'; });
+      card.querySelectorAll('.line-item').forEach((item, i) => {
+        if (i >= 3) item.style.display = 'none';
+      });
       // "모두 보기" 클릭 시 상세 패널
       const seeAll = card.querySelector('.see-all');
-      if (seeAll && key) {
-        seeAll.onclick = () => openHotMoment(key);
+      if (seeAll) {
+        seeAll.setAttribute('onclick', `openHotMoment('${key}')`);
+        seeAll.style.cursor = 'pointer';
       }
     });
   }
-  document.addEventListener('DOMContentLoaded', initHomeCards);
+  initHomeCards();
 
   // Filter chips
   const FILTER_MAP = {
