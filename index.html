@@ -93,7 +93,71 @@
   .main-wrap { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; padding: 20px 16px 80px; }
   .feed { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
   .sidebar { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
-  @media(max-width: 900px) { .sidebar { display: none; } }
+  @media(max-width: 900px) {
+    .main-wrap { flex-direction: column; }
+    .sidebar { width: 100%; }
+  }
+
+  /* ── DETAIL PANEL ── */
+  .detail-panel {
+    position: fixed; inset: 0; z-index: 300;
+    background: var(--bg); overflow-y: auto;
+    transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+  }
+  .detail-panel.open { transform: translateX(0); }
+  .panel-nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(15,15,20,0.9); backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 52px;
+  }
+  .panel-back {
+    background: none; border: none; color: var(--text-sub); cursor: pointer;
+    display: flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 600;
+    padding: 6px 0;
+  }
+  .panel-back:hover { color: var(--text); }
+  .panel-back svg { width: 18px; height: 18px; }
+  .panel-title { font-size: 1rem; font-weight: 800; }
+  .panel-body { padding: 20px 16px 60px; max-width: 680px; margin: 0 auto; }
+
+  /* moment detail (hot moment 클릭 시) */
+  .panel-moment-img { border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; position: relative; }
+  .panel-moment-img img { width: 100%; max-height: 380px; object-fit: cover; display: block; }
+
+  /* profile writer */
+  .profile-header { display: flex; align-items: center; gap: 14px; padding: 16px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .profile-avatar { width: 56px; height: 56px; border-radius: 50%; font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .profile-meta { flex: 1; }
+  .profile-name { font-size: 1.1rem; font-weight: 800; margin-bottom: 2px; }
+  .profile-stat { font-size: 0.78rem; color: var(--text-muted); }
+  .profile-line-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 12px 14px; margin-bottom: 10px;
+  }
+  .profile-line-img { width: 100%; height: 80px; object-fit: cover; border-radius: 6px; margin-bottom: 8px; background: var(--surface2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .profile-line-img img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-line-text { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 4px; quotes: '"' '"'; }
+  .profile-line-text::before { content: open-quote; color: var(--accent2); }
+  .profile-line-text::after { content: close-quote; color: var(--accent2); }
+  .profile-line-meta { display: flex; align-items: center; justify-content: space-between; }
+  .profile-line-tags { font-size: 0.7rem; color: var(--text-muted); }
+  .profile-line-votes { font-size: 0.78rem; font-weight: 700; color: var(--hot); display: flex; align-items: center; gap: 3px; }
+
+  /* tag page */
+  .tag-hero { padding: 20px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .tag-hero-name { font-size: 1.4rem; font-weight: 900; color: var(--accent); margin-bottom: 4px; }
+  .tag-hero-count { font-size: 0.82rem; color: var(--text-muted); }
+  .tag-moment-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    overflow: hidden; margin-bottom: 12px;
+  }
+  .tag-moment-img { width: 100%; height: 160px; object-fit: cover; display: block; background: var(--surface2); }
+  .tag-moment-body { padding: 10px 12px; }
+  .tag-moment-best { font-size: 0.88rem; font-weight: 600; color: var(--text); margin-bottom: 4px; quotes: '"' '"'; }
+  .tag-moment-best::before { content: open-quote; color: var(--accent2); }
+  .tag-moment-best::after { content: close-quote; color: var(--accent2); }
+  .tag-moment-meta { font-size: 0.72rem; color: var(--text-muted); }
 
   /* ── MOMENT CARD ── */
   .moment-card {
@@ -366,9 +430,7 @@
   <div class="hero-badge">✦ Fan Caption Battle</div>
   <h1>이 장면에 딱 맞는<br><span>한 줄</span>은?</h1>
   <p>좋아하는 이미지를 올리고, 가장 어울리는 한 문장을 경쟁하세요. 최고 대사는 카드로 저장·공유!</p>
-  <div class="hero-cta">
-    <button class="btn btn-ghost">Hot Moments 보기</button>
-  </div>
+  <div class="hero-cta"></div>
   <div class="hero-stats">
     <div class="stat-item"><div class="stat-num">12.4K</div><div class="stat-label">Moments</div></div>
     <div class="stat-item"><div class="stat-num">89.2K</div><div class="stat-label">Lines</div></div>
@@ -691,8 +753,8 @@
           <span class="tag tag-vibe">#Fluff</span>
         </div>
       </div>
-      <div class="card-image" style="background:#0a0a10;height:300px;display:flex;align-items:center;justify-content:center">
-        <div style="text-align:center;color:#2e2e42;font-size:3rem">🎤</div>
+      <div class="card-image">
+        <img src="images/card4.png" alt="moment image" onerror="this.style.height='280px';this.style.background='#0a0a10'">
         <div class="img-overlay">
           <div class="hint-label">대사 힌트</div>
           <div class="hint-text">무대 끝나고 백스테이지에서 눈 마주친 순간</div>
@@ -771,8 +833,8 @@
           <span class="tag tag-vibe">#Angst</span>
         </div>
       </div>
-      <div class="card-image" style="background:linear-gradient(135deg,#1a0000,#2d0a0a);height:300px;display:flex;align-items:center;justify-content:center">
-        <div style="text-align:center;color:#2e2e42;font-size:3rem">🌙</div>
+      <div class="card-image">
+        <img src="images/card5.png" alt="moment image" onerror="this.style.height='280px';this.style.background='linear-gradient(135deg,#1a0000,#2d0a0a)'">
         <div class="img-overlay">
           <div class="hint-label">대사 힌트</div>
           <div class="hint-text">전쟁 전날 밤, 아무 말도 못 하고 서 있는 두 사람</div>
@@ -856,8 +918,8 @@
           <span class="tag tag-vibe">#Fluff</span>
         </div>
       </div>
-      <div class="card-image" style="background:linear-gradient(135deg,#052e16,#0a2818);height:300px;display:flex;align-items:center;justify-content:center">
-        <div style="text-align:center;color:#2e2e42;font-size:3rem">🌸</div>
+      <div class="card-image">
+        <img src="images/card6.png" alt="moment image" onerror="this.style.height='280px';this.style.background='linear-gradient(135deg,#052e16,#0a2818)'">
         <div class="img-overlay">
           <div class="hint-label">대사 힌트</div>
           <div class="hint-text">밀밭에서 신부가 처음 도깨비를 소환했을 때</div>
@@ -936,8 +998,8 @@
           <span class="tag tag-vibe">#OOC</span>
         </div>
       </div>
-      <div class="card-image" style="background:linear-gradient(135deg,#1c0f00,#2d1a00);height:300px;display:flex;align-items:center;justify-content:center">
-        <div style="text-align:center;color:#2e2e42;font-size:3rem">💎</div>
+      <div class="card-image">
+        <img src="images/card7.png" alt="moment image" onerror="this.style.height='280px';this.style.background='linear-gradient(135deg,#1c0f00,#2d1a00)'">
         <div class="img-overlay">
           <div class="hint-label">대사 힌트</div>
           <div class="hint-text">멤버들이 단체로 리액션 게임 하다가 키가 또 짐 싼다고 협박하는 장면</div>
@@ -1016,7 +1078,7 @@
         <svg viewBox="0 0 24 24" fill="currentColor" style="color:var(--hot)"><path d="M12 2c0 0-6 5-6 11a6 6 0 0012 0c0-6-6-11-6-11zm0 16a4 4 0 01-4-4c0-2.5 1.5-4.8 4-7.5 2.5 2.7 4 5 4 7.5a4 4 0 01-4 4z"/></svg>
         오늘의 Hot Moments
       </div>
-      <div class="trending-item">
+      <div class="trending-item" onclick="openHotMoment('card3')" style="cursor:pointer">
         <div class="trend-thumb">
           <img src="images/card3.png" onerror="this.parentElement.style.background='#2a1040'">
         </div>
@@ -1026,7 +1088,7 @@
         </div>
         <div class="trend-rank" style="color:var(--hot)">🔥</div>
       </div>
-      <div class="trending-item">
+      <div class="trending-item" onclick="openHotMoment('card2')" style="cursor:pointer">
         <div class="trend-thumb">
           <img src="images/card2.jpg" onerror="this.parentElement.style.background='#200020'">
         </div>
@@ -1036,7 +1098,7 @@
         </div>
         <div class="trend-rank" style="color:var(--accent)">2</div>
       </div>
-      <div class="trending-item">
+      <div class="trending-item" onclick="openHotMoment('card1')" style="cursor:pointer">
         <div class="trend-thumb">
           <img src="images/card1.png" onerror="this.parentElement.style.background='#1a0a2e'">
         </div>
@@ -1054,22 +1116,22 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
         Best Line Writers
       </div>
-      <div class="leaderboard-item">
+      <div class="leaderboard-item" onclick="openWriter('moonwriter_k')" style="cursor:pointer">
         <div class="lb-avatar" style="background:linear-gradient(135deg,#f59e0b,#fb923c)">👑</div>
         <div class="lb-info"><div class="lb-name">@moonwriter_k</div><div class="lb-wins">이번 주 3회 1위</div></div>
         <div class="lb-score">12.4K</div>
       </div>
-      <div class="leaderboard-item">
+      <div class="leaderboard-item" onclick="openWriter('angst_dealer')" style="cursor:pointer">
         <div class="lb-avatar" style="background:linear-gradient(135deg,#7c3aed,#c084fc)">A</div>
         <div class="lb-info"><div class="lb-name">@angst_dealer</div><div class="lb-wins">이번 주 2회 1위</div></div>
         <div class="lb-score">9.8K</div>
       </div>
-      <div class="leaderboard-item">
+      <div class="leaderboard-item" onclick="openWriter('cracklord99')" style="cursor:pointer">
         <div class="lb-avatar" style="background:linear-gradient(135deg,#be185d,#f472b6)">C</div>
         <div class="lb-info"><div class="lb-name">@cracklord99</div><div class="lb-wins">이번 주 2회 1위</div></div>
         <div class="lb-score">8.1K</div>
       </div>
-      <div class="leaderboard-item">
+      <div class="leaderboard-item" onclick="openWriter('fluffmaster99')" style="cursor:pointer">
         <div class="lb-avatar" style="background:linear-gradient(135deg,#0369a1,#60a5fa)">F</div>
         <div class="lb-info"><div class="lb-name">@fluffmaster99</div><div class="lb-wins">이번 주 1회 1위</div></div>
         <div class="lb-score">5.3K</div>
@@ -1083,14 +1145,14 @@
         인기 태그
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">
-        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#JeongyeonYume</span>
-        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#Wolfstar</span>
-        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#Fluff</span>
-        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#Angst</span>
-        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#Crack</span>
-        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#KDrama</span>
-        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#OOC</span>
-        <span class="chip" style="font-size:0.75rem;padding:4px 10px">#Spicy</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px" onclick="openTag('JeongyeonYume')">#JeongyeonYume</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px" onclick="openTag('Wolfstar')">#Wolfstar</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px" onclick="openTag('Fluff')">#Fluff</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px" onclick="openTag('Angst')">#Angst</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px" onclick="openTag('Crack')">#Crack</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px" onclick="openTag('KDrama')">#KDrama</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px" onclick="openTag('OOC')">#OOC</span>
+        <span class="chip" style="font-size:0.75rem;padding:4px 10px" onclick="openTag('Spicy')">#Spicy</span>
       </div>
     </div>
 
@@ -1184,8 +1246,44 @@
         이미지 저장
       </div>
     </div>
-    <p style="font-size:0.72rem;color:var(--text-muted);text-align:center;margin-top:12px">워터마크 자동 삽입 · #BunjangGlobal 해시태그 포함</p>
+    <p style="font-size:0.72rem;color:var(--text-muted);text-align:center;margin-top:12px">#BunjangGlobal 해시태그 포함</p>
   </div>
+</div>
+
+<!-- PANEL: Hot Moment Detail -->
+<div class="detail-panel" id="panelMoment">
+  <div class="panel-nav">
+    <button class="panel-back" onclick="closePanel('panelMoment')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      돌아가기
+    </button>
+    <span class="panel-title" id="panelMomentTitle">Hot Moment</span>
+  </div>
+  <div class="panel-body" id="panelMomentBody"></div>
+</div>
+
+<!-- PANEL: Writer Profile -->
+<div class="detail-panel" id="panelWriter">
+  <div class="panel-nav">
+    <button class="panel-back" onclick="closePanel('panelWriter')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      돌아가기
+    </button>
+    <span class="panel-title" id="panelWriterTitle">Writer</span>
+  </div>
+  <div class="panel-body" id="panelWriterBody"></div>
+</div>
+
+<!-- PANEL: Tag -->
+<div class="detail-panel" id="panelTag">
+  <div class="panel-nav">
+    <button class="panel-back" onclick="closePanel('panelTag')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      돌아가기
+    </button>
+    <span class="panel-title" id="panelTagTitle">태그</span>
+  </div>
+  <div class="panel-body" id="panelTagBody"></div>
 </div>
 
 <!-- TOAST -->
@@ -1363,6 +1461,215 @@
   function openShare() { document.getElementById('shareModal').classList.add('open'); }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
   function closeOnBackdrop(e, id) { if (e.target.id === id) closeModal(id); }
+
+  // ── DETAIL PANELS ──
+  function closePanel(id) { document.getElementById(id).classList.remove('open'); }
+
+  // Hot Moment data
+  const HOT_MOMENTS = {
+    card3: {
+      title: '#K-Drama · #Crack',
+      img: 'images/card3.png',
+      hint: '재벌 CEO가 처음으로 편의점에서 삼각김밥을 사는 장면',
+      lines: [
+        { text: '...이게 사람이 먹는 음식이야? (두 번째 손에 들고 있음)', user: '@cracklord99', votes: '2,847' },
+        { text: '비서, 이걸 어떻게 뜯는 건가. (100원 동전 꺼냄)', user: '@drama_junkie', votes: '1,932' },
+        { text: '맛있다. (표정: 0.0)', user: '@stoic_ceo_au', votes: '1,441' },
+      ],
+      likes: '7.6K', lineCount: 214
+    },
+    card2: {
+      title: '#HP · #Wolfstar · #Angst',
+      img: 'images/card2.jpg',
+      hint: 'Marauders 시절, 달 뜨기 전 마지막 밤',
+      lines: [
+        { text: '내일은 기억 못 할 거야. 그러니까 오늘만큼은, 네 곁에 있을게.', user: '@angst_dealer', votes: '1,247' },
+        { text: '무서워? — 아니, 네가 떠날까봐 무서운 거야.', user: '@moony_sirius', votes: '834' },
+      ],
+      likes: '4.1K', lineCount: 89
+    },
+    card1: {
+      title: '#TWICE · #JeongyeonYume · #Fluff',
+      img: 'images/card1.png',
+      hint: '비 오는 날, 우산 없이 마주쳤을 때',
+      lines: [
+        { text: '우산 없어? 잘됐다, 그럼 핑계 생겼네.', user: '@moonwriter_k', votes: '847' },
+        { text: '같이 맞자. 이런 날은 같이 맞아야지.', user: '@rainy_shipper', votes: '593' },
+        { text: '하… 이러면 안 되는데. 귀여워 죽겠잖아.', user: '@fluffmaster99', votes: '421' },
+      ],
+      likes: '2.3K', lineCount: 142
+    },
+  };
+
+  function openHotMoment(cardKey) {
+    const d = HOT_MOMENTS[cardKey];
+    if (!d) return;
+    document.getElementById('panelMomentTitle').textContent = d.title;
+    const linesHTML = d.lines.map((l, i) => `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span style="font-size:0.75rem;font-weight:800;width:18px;flex-shrink:0;color:${i===0?'var(--hot)':i===1?'var(--accent)':'var(--accent2)'}">${i+1}</span>
+        <div style="flex:1">
+          <div style="font-size:0.9rem;color:var(--text);line-height:1.45;margin-bottom:3px">${l.text}</div>
+          <div style="font-size:0.7rem;color:var(--text-muted)">${l.user}</div>
+        </div>
+        <span style="font-size:0.78rem;font-weight:700;color:var(--hot);flex-shrink:0">♥ ${l.votes}</span>
+      </div>`).join('');
+    document.getElementById('panelMomentBody').innerHTML = `
+      <div class="panel-moment-img">
+        <img src="${d.img}" alt="" onerror="this.style.height='220px';this.style.background='var(--surface2)'">
+        <div class="img-overlay"><div class="hint-label">대사 힌트</div><div class="hint-text">${d.hint}</div></div>
+      </div>
+      <div style="display:flex;gap:16px;margin-bottom:16px">
+        <span style="font-size:0.82rem;color:var(--text-muted)">♥ ${d.likes} likes</span>
+        <span style="font-size:0.82rem;color:var(--text-muted)">💬 ${d.lineCount} lines</span>
+      </div>
+      <div style="font-size:0.78rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">인기 대사</div>
+      ${linesHTML}
+      <div style="margin-top:16px">
+        <div class="write-box">
+          <textarea placeholder="대사를 써보세요…" rows="1" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="showToast('대사가 등록됐어요! ✨')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>`;
+    document.getElementById('panelMoment').classList.add('open');
+  }
+
+  // Writer data
+  const WRITERS = {
+    moonwriter_k: {
+      avatar: '👑', bg: 'linear-gradient(135deg,#f59e0b,#fb923c)',
+      wins: '이번 주 3회 1위', score: '12.4K',
+      lines: [
+        { text: '우산 없어? 잘됐다, 그럼 핑계 생겼네.', img: 'images/card1.png', tags: '#TWICE · #Fluff', votes: '847' },
+        { text: '네 이름 부를 때마다 심장이 한 박자 늦어.', img: '', tags: '#BTS · #Fluff', votes: '612' },
+        { text: '기억 못 해도 괜찮아. 내가 기억할게.', img: 'images/card2.jpg', tags: '#HP · #Angst', votes: '504' },
+      ]
+    },
+    angst_dealer: {
+      avatar: 'A', bg: 'linear-gradient(135deg,#7c3aed,#c084fc)',
+      wins: '이번 주 2회 1위', score: '9.8K',
+      lines: [
+        { text: '내일은 기억 못 할 거야. 그러니까 오늘만큼은, 네 곁에 있을게.', img: 'images/card2.jpg', tags: '#HP · #Wolfstar', votes: '1,247' },
+        { text: '말 못 한 거 후회하지 않을게. 대신 한 가지만 — 이름 불러도 돼?', img: '', tags: '#Naruto · #Angst', votes: '891' },
+        { text: '떠나지 마. 제발. 그게 전부야.', img: '', tags: '#Anime · #Angst', votes: '733' },
+      ]
+    },
+    cracklord99: {
+      avatar: 'C', bg: 'linear-gradient(135deg,#be185d,#f472b6)',
+      wins: '이번 주 2회 1위', score: '8.1K',
+      lines: [
+        { text: '...이게 사람이 먹는 음식이야? (두 번째 손에 들고 있음)', img: 'images/card3.png', tags: '#K-Drama · #Crack', votes: '2,847' },
+        { text: '나 진짜 간다? (10년째 같은 말)', img: '', tags: '#SHINee · #Crack', votes: '1,203' },
+        { text: '900년을 기다렸는데 첫 마디가 "저기요"야?', img: '', tags: '#도깨비 · #Crack', votes: '998' },
+      ]
+    },
+    fluffmaster99: {
+      avatar: 'F', bg: 'linear-gradient(135deg,#0369a1,#60a5fa)',
+      wins: '이번 주 1회 1위', score: '5.3K',
+      lines: [
+        { text: '하… 이러면 안 되는데. 귀여워 죽겠잖아.', img: 'images/card1.png', tags: '#TWICE · #Fluff', votes: '421' },
+        { text: '옆에 있어도 보고 싶다, 이상하지?', img: '', tags: '#KDrama · #Fluff', votes: '388' },
+        { text: '손 잡아도 돼? — 이미 잡고 있잖아.', img: '', tags: '#Fluff · #설렘', votes: '304' },
+      ]
+    },
+  };
+
+  function openWriter(handle) {
+    const w = WRITERS[handle];
+    if (!w) return;
+    document.getElementById('panelWriterTitle').textContent = '@' + handle;
+    const linesHTML = w.lines.map(l => {
+      const imgEl = l.img
+        ? `<div class="profile-line-img"><img src="${l.img}" alt="" onerror="this.parentElement.style.background='var(--surface2)'"></div>`
+        : `<div class="profile-line-img" style="background:var(--surface2);border-radius:6px;height:80px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:1.4rem">✦</div>`;
+      return `<div class="profile-line-card">
+        ${imgEl}
+        <div class="profile-line-text">${l.text}</div>
+        <div class="profile-line-meta">
+          <span class="profile-line-tags">${l.tags}</span>
+          <span class="profile-line-votes">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            ${l.votes}
+          </span>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('panelWriterBody').innerHTML = `
+      <div class="profile-header">
+        <div class="profile-avatar" style="background:${w.bg}">${w.avatar}</div>
+        <div class="profile-meta">
+          <div class="profile-name">@${handle}</div>
+          <div class="profile-stat">${w.wins} · 총 ${w.score} votes</div>
+        </div>
+      </div>
+      <div style="font-size:0.78rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">등록한 Best Lines</div>
+      ${linesHTML}`;
+    document.getElementById('panelWriter').classList.add('open');
+  }
+
+  // Tag data
+  const TAG_MOMENTS = {
+    JeongyeonYume: [
+      { img: 'images/card1.png', best: '우산 없어? 잘됐다, 그럼 핑계 생겼네.', user: '@moonwriter_k', lines: 142, likes: '2.3K' },
+      { img: '', best: '옆에 있어도 보고 싶다, 이상하지?', user: '@fluffmaster99', lines: 58, likes: '1.1K' },
+    ],
+    Wolfstar: [
+      { img: 'images/card2.jpg', best: '내일은 기억 못 할 거야. 그러니까 오늘만큼은, 네 곁에 있을게.', user: '@angst_dealer', lines: 89, likes: '4.1K' },
+      { img: '', best: '무서워? — 아니, 네가 떠날까봐 무서운 거야.', user: '@moony_sirius', lines: 34, likes: '1.8K' },
+    ],
+    Fluff: [
+      { img: 'images/card1.png', best: '우산 없어? 잘됐다, 그럼 핑계 생겼네.', user: '@moonwriter_k', lines: 142, likes: '2.3K' },
+      { img: '', best: '900년을 기다렸는데 첫 마디가 "저기요"야?', user: '@goblin_crack', lines: 302, likes: '9.2K' },
+      { img: '', best: '오늘 무대, 나만 봤어.', user: '@taekook_writer', lines: 187, likes: '5.8K' },
+    ],
+    Angst: [
+      { img: 'images/card2.jpg', best: '내일은 기억 못 할 거야. 그러니까 오늘만큼은, 네 곁에 있을게.', user: '@angst_dealer', lines: 89, likes: '4.1K' },
+      { img: '', best: '살아서 돌아와. 그것만 약속해줘.', user: '@hinata_deserved', lines: 113, likes: '3.9K' },
+    ],
+    Crack: [
+      { img: 'images/card3.png', best: '...이게 사람이 먹는 음식이야? (두 번째 손에 들고 있음)', user: '@cracklord99', lines: 214, likes: '7.6K' },
+      { img: '', best: '나 진짜 간다? (10년째 같은 말)', user: '@key_is_unhinged', lines: 261, likes: '6.3K' },
+      { img: '', best: '900년을 기다렸는데 첫 마디가 "저기요"야?', user: '@goblin_crack', lines: 302, likes: '9.2K' },
+    ],
+    KDrama: [
+      { img: 'images/card3.png', best: '...이게 사람이 먹는 음식이야? (두 번째 손에 들고 있음)', user: '@cracklord99', lines: 214, likes: '7.6K' },
+      { img: '', best: '900년을 기다렸는데 첫 마디가 "저기요"야?', user: '@goblin_crack', lines: 302, likes: '9.2K' },
+    ],
+    OOC: [
+      { img: 'images/card3.png', best: '비서, 이걸 어떻게 뜯는 건가. (100원 동전 꺼냄)', user: '@drama_junkie', lines: 214, likes: '7.6K' },
+      { img: '', best: '탬탬버린 또 꺼내면 해체야 해체.', user: '@shinee_crack99', lines: 261, likes: '6.3K' },
+    ],
+    Spicy: [
+      { img: '', best: '손 잡아도 돼? — 이미 잡고 있잖아.', user: '@fluffmaster99', lines: 77, likes: '1.4K' },
+      { img: '', best: '다음엔 앞자리 줄게. 조건 있음.', user: '@kookie_agenda', lines: 187, likes: '5.8K' },
+    ],
+  };
+
+  function openTag(tag) {
+    const moments = TAG_MOMENTS[tag] || [];
+    document.getElementById('panelTagTitle').textContent = '#' + tag;
+    const cardsHTML = moments.map(m => {
+      const imgEl = m.img
+        ? `<img class="tag-moment-img" src="${m.img}" alt="" onerror="this.style.background='var(--surface2)'">`
+        : `<div class="tag-moment-img" style="background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:2rem">✦</div>`;
+      return `<div class="tag-moment-card">
+        ${imgEl}
+        <div class="tag-moment-body">
+          <div class="tag-moment-best">${m.best}</div>
+          <div class="tag-moment-meta">by ${m.user} · ${m.lines} lines · ♥ ${m.likes}</div>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('panelTagBody').innerHTML = `
+      <div class="tag-hero">
+        <div class="tag-hero-name">#${tag}</div>
+        <div class="tag-hero-count">${moments.length * 47 + 12}개의 Moment</div>
+      </div>
+      ${cardsHTML || '<p style="color:var(--text-muted);text-align:center;padding:40px 0">아직 모먼트가 없어요</p>'}`;
+    document.getElementById('panelTag').classList.add('open');
+  }
 
   // File upload preview
   function previewFile(e) {
