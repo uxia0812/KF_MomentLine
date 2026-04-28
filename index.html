@@ -113,11 +113,12 @@
   }
   .panel-back {
     background: none; border: none; color: var(--text-sub); cursor: pointer;
-    display: flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 600;
-    padding: 6px 0;
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%; padding: 0;
+    transition: background .15s, color .15s;
   }
-  .panel-back:hover { color: var(--text); }
-  .panel-back svg { width: 18px; height: 18px; }
+  .panel-back:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+  .panel-back svg { width: 22px; height: 22px; }
   .panel-title { font-size: 1rem; font-weight: 800; }
   .panel-body { padding: 20px 16px 60px; max-width: 680px; margin: 0 auto; }
 
@@ -1299,7 +1300,6 @@
   <div class="panel-nav">
     <button class="panel-back" onclick="closePanel('panelMoment')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      돌아가기
     </button>
     <span class="panel-title" id="panelMomentTitle">Hot Moment</span>
   </div>
@@ -1311,7 +1311,6 @@
   <div class="panel-nav">
     <button class="panel-back" onclick="closePanel('panelWriter')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      돌아가기
     </button>
     <span class="panel-title" id="panelWriterTitle">Writer</span>
   </div>
@@ -1323,7 +1322,6 @@
   <div class="panel-nav">
     <button class="panel-back" onclick="closePanel('panelTag')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      돌아가기
     </button>
     <span class="panel-title" id="panelTagTitle">태그</span>
   </div>
