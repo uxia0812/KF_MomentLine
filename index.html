@@ -306,7 +306,7 @@
 
   /* ── UPLOAD MODAL ── */
   .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 400;
     display: flex; align-items: flex-end; justify-content: center;
     opacity: 0; pointer-events: none; transition: opacity .2s;
   }
@@ -1253,7 +1253,7 @@
 </div>
 
 <!-- SAVE LOADING OVERLAY -->
-<div id="saveLoadingOverlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.88);flex-direction:column;align-items:center;justify-content:center;padding:24px">
+<div id="saveLoadingOverlay" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.88);flex-direction:column;align-items:center;justify-content:center;padding:24px">
   <div style="width:100%;max-width:360px;text-align:center">
     <!-- 스피너 -->
     <div id="saveSpinner" style="margin-bottom:20px">
