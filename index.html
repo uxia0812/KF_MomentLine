@@ -1337,6 +1337,62 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // 홈 카드 대사 3개 제한 + "모두 보기" 상세 패널 연결
+  // 각 카드에 data-moment-key 세팅 (순서 기반)
+  const CARD_KEYS = ['card1','card2','card3','card4','card5','card6','card7'];
+  // 카드 4~7 HOT_MOMENTS 확장 (홈 카드 상세 지원)
+  const EXTRA_MOMENTS = {
+    card4: { title: '#BTS · #Taekook · #Fluff', group: 'BTS', img: 'images/card4.png', hint: '무대 끝나고 백스테이지에서 눈 마주친 순간',
+      lines: [
+        { text: '오늘 무대, 나만 봤어.', user: '@taekook_writer', votes: 3102 },
+        { text: '땀 냄새도 좋냐고, 진짜.', user: '@vmin_supremacy', votes: 1874 },
+        { text: '다음엔 앞자리 줄게. 조건 있음.', user: '@kookie_agenda', votes: 1203 },
+        { text: '무대 위에선 그냥 가수인데, 네 눈이 닿으면 달라져.', user: '@bts_feels', votes: 892 },
+        { text: '백스테이지에서만큼은 그냥 나야.', user: '@behind_stage', votes: 677 },
+      ], likes: '5.8K', lineCount: 187 },
+    card5: { title: '#Naruto · #NaruHina · #Angst', group: 'Naruto', img: 'images/card5.png', hint: '전쟁 전날 밤, 아무 말도 못 하고 서 있는 두 사람',
+      lines: [
+        { text: '살아서 돌아와. 그것만 약속해줘.', user: '@hinata_deserved', votes: 2441 },
+        { text: '말 못 한 거 후회하지 않을게. 대신 한 가지만 — 이름 불러도 돼?', user: '@angst_dealer', votes: 1588 },
+        { text: '울지 마. 나 약해지잖아.', user: '@naruto_simp', votes: 997 },
+        { text: '죽으면 안 돼. 명령이야.', user: '@hokage_order', votes: 734 },
+        { text: '기다릴게, 꼭 돌아와.', user: '@hinata_waits', votes: 521 },
+      ], likes: '3.9K', lineCount: 113 },
+    card6: { title: '#도깨비 · #신은탁 · #Fluff', group: 'K-Drama', img: 'images/card6.png', hint: '밀밭에서 신부가 처음 도깨비를 소환했을 때',
+      lines: [
+        { text: '900년을 기다렸는데 첫 마디가 "저기요"야?', user: '@goblin_crack', votes: 5512 },
+        { text: '검 뽑을 사람이 이렇게 귀여우면 어떡해.', user: '@euntak_defender', votes: 3277 },
+        { text: '신부야, 그 손 안 치워?', user: '@kdrama_moment', votes: 2104 },
+        { text: '900년 만에 처음으로 심장이 뛰었어.', user: '@goblin_heart', votes: 1843 },
+        { text: '꽃밭에서 만날 줄 알았는데, 편의점이네.', user: '@destiny_au', votes: 1122 },
+      ], likes: '9.2K', lineCount: 302 },
+    card7: { title: '#SHINee · #Crack · #OOC', group: 'SHINee', img: 'images/card7.png', hint: '멤버들 리액션 게임 하다가 키가 또 짐 싼다고 협박',
+      lines: [
+        { text: '나 진짜 간다? (10년째 같은 말)', user: '@key_is_unhinged', votes: 4712 },
+        { text: '탬탬버린 또 꺼내면 해체야 해체.', user: '@shinee_crack99', votes: 3018 },
+        { text: '온유야 중재 좀 — 아 온유도 같은 편이네.', user: '@bling_blings', votes: 1856 },
+        { text: '(진지하게) 이번엔 진짜임.', user: '@minho_witness', votes: 1203 },
+        { text: '태민아 너라도 말려봐. — 저도 키 오빠 편이요.', user: '@taemin_chaos', votes: 877 },
+      ], likes: '6.3K', lineCount: 261 },
+  };
+  Object.assign(HOT_MOMENTS, EXTRA_MOMENTS);
+
+  function initHomeCards() {
+    document.querySelectorAll('.moment-card').forEach((card, idx) => {
+      const key = CARD_KEYS[idx];
+      if (key) card.dataset.momentKey = key;
+      // 4번째 이상 line-item 숨기기
+      const items = card.querySelectorAll('.line-item');
+      items.forEach((item, i) => { if (i >= 3) item.style.display = 'none'; });
+      // "모두 보기" 클릭 시 상세 패널
+      const seeAll = card.querySelector('.see-all');
+      if (seeAll && key) {
+        seeAll.onclick = () => openHotMoment(key);
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', initHomeCards);
+
   // Filter chips
   const FILTER_MAP = {
     '🔥 Hot':    null,        // 전체 표시
@@ -1576,52 +1632,112 @@
   // Hot Moment data
   const HOT_MOMENTS = {
     card3: {
-      title: '#K-Drama · #Crack',
+      title: '#K-Drama · #Crack', group: 'K-Drama',
       img: 'images/card3.png',
       hint: '재벌 CEO가 처음으로 편의점에서 삼각김밥을 사는 장면',
       lines: [
-        { text: '...이게 사람이 먹는 음식이야? (두 번째 손에 들고 있음)', user: '@cracklord99', votes: '2,847' },
-        { text: '비서, 이걸 어떻게 뜯는 건가. (100원 동전 꺼냄)', user: '@drama_junkie', votes: '1,932' },
-        { text: '맛있다. (표정: 0.0)', user: '@stoic_ceo_au', votes: '1,441' },
+        { text: '...이게 사람이 먹는 음식이야? (두 번째 손에 들고 있음)', user: '@cracklord99', votes: 2847 },
+        { text: '비서, 이걸 어떻게 뜯는 건가. (100원 동전 꺼냄)', user: '@drama_junkie', votes: 1932 },
+        { text: '맛있다. (표정: 0.0)', user: '@stoic_ceo_au', votes: 1441 },
+        { text: '이게 편의점 음식 중 제일 맛있다고요? (충격)', user: '@kdramastan', votes: 988 },
+        { text: '회장님, 거스름돈도 받으세요.', user: '@cashier_au', votes: 744 },
       ],
       likes: '7.6K', lineCount: 214
     },
     card2: {
-      title: '#HP · #Wolfstar · #Angst',
+      title: '#HP · #Wolfstar · #Angst', group: 'Harry Potter',
       img: 'images/card2.jpg',
       hint: 'Marauders 시절, 달 뜨기 전 마지막 밤',
       lines: [
-        { text: '내일은 기억 못 할 거야. 그러니까 오늘만큼은, 네 곁에 있을게.', user: '@angst_dealer', votes: '1,247' },
-        { text: '무서워? — 아니, 네가 떠날까봐 무서운 거야.', user: '@moony_sirius', votes: '834' },
+        { text: '내일은 기억 못 할 거야. 그러니까 오늘만큼은, 네 곁에 있을게.', user: '@angst_dealer', votes: 1247 },
+        { text: '무서워? — 아니, 네가 떠날까봐 무서운 거야.', user: '@moony_sirius', votes: 834 },
+        { text: '달이 뜨기 전에 말할게. 좋아해.', user: '@moonlit_angst', votes: 612 },
+        { text: '괜찮다고 하지 마. 나는 알거든.', user: '@wolfstar_truth', votes: 490 },
       ],
       likes: '4.1K', lineCount: 89
     },
     card1: {
-      title: '#TWICE · #JeongyeonYume · #Fluff',
+      title: '#TWICE · #JeongyeonYume · #Fluff', group: 'TWICE',
       img: 'images/card1.png',
       hint: '비 오는 날, 우산 없이 마주쳤을 때',
       lines: [
-        { text: '우산 없어? 잘됐다, 그럼 핑계 생겼네.', user: '@moonwriter_k', votes: '847' },
-        { text: '같이 맞자. 이런 날은 같이 맞아야지.', user: '@rainy_shipper', votes: '593' },
-        { text: '하… 이러면 안 되는데. 귀여워 죽겠잖아.', user: '@fluffmaster99', votes: '421' },
+        { text: '우산 없어? 잘됐다, 그럼 핑계 생겼네.', user: '@moonwriter_k', votes: 847 },
+        { text: '같이 맞자. 이런 날은 같이 맞아야지.', user: '@rainy_shipper', votes: 593 },
+        { text: '하… 이러면 안 되는데. 귀여워 죽겠잖아.', user: '@fluffmaster99', votes: 421 },
+        { text: '비 맞으면서도 웃고 있어. 진짜 반칙이다.', user: '@twice_heart', votes: 305 },
+        { text: '우산 하나인데 어쩌죠? — 어쩌긴, 같이 써야죠.', user: '@ship_it_all', votes: 278 },
       ],
       likes: '2.3K', lineCount: 142
     },
   };
 
+  // 그룹별 상품 추천
+  const GROUP_PRODUCTS = {
+    'K-Drama':       ['재벌 CEO 드라마 OST LP', '편의점 삼각김밥 키링', '드라마 포토북 한정판', 'K-Drama 굿즈 머그컵', '명품 수트 피규어'],
+    'Harry Potter':  ['마법사 완드 레플리카', '호그와트 기숙사 스카프', 'HP 한정판 아트북', '마법약 미니어처 세트', '마루더스 지도 프린트'],
+    'TWICE':         ['TWICE 공식 응원봉', '나연 솔로 포토카드', 'TWICE 미니앨범 세트', '정연 팬사인회 슬로건', 'TWICE 멤버 아크릴 스탠드'],
+    'BTS':           ['BTS 공식 포토카드', '방탄 방어구 키링', 'BTS 앨범 박스 세트', '정국 솔로 굿즈', 'RM 아트북 컬렉션'],
+    'Naruto':        ['나루토 질풍전 피규어', '나루토 두루마리 포스터', '우치하 서클 반지', '닌자 머리띠 레플리카', '나루토 한정판 아트북'],
+    'default':       ['K-Pop 공식 포토카드', '팬덤 응원봉', '한정판 앨범', '아이돌 아크릴 키링', '팬클럽 공식 굿즈'],
+  };
+  const PRODUCT_PRICES = ['₩8,500','₩12,000','₩18,900','₩24,000','₩34,500','₩9,800','₩15,000','₩22,000'];
+  const PRODUCT_EMOJIS = ['🃏','💿','📣','🎵','👑','🧸','💎','🎤','🖼️','🧣'];
+
+  function buildProductsHTML(group) {
+    const items = GROUP_PRODUCTS[group] || GROUP_PRODUCTS['default'];
+    return items.map((name, i) => `
+      <div style="flex-shrink:0;width:130px;background:var(--card-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer" onclick="showToast('Global Bunjang에서 확인하세요!')">
+        <div style="height:80px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:2rem">${PRODUCT_EMOJIS[i % PRODUCT_EMOJIS.length]}</div>
+        <div style="padding:8px">
+          <div style="font-size:0.75rem;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${name}</div>
+          <div style="font-size:0.78rem;font-weight:800;color:var(--accent)">${PRODUCT_PRICES[i % PRODUCT_PRICES.length]}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // 상세 패널에서 대사 등록
+  function panelSubmitLine(btn) {
+    const box = btn.closest('.write-box');
+    const ta = box.querySelector('textarea');
+    const text = ta.value.trim();
+    if (!text) { ta.focus(); return; }
+    const listEl = document.getElementById('panelLinesList');
+    const count = listEl.querySelectorAll('.panel-line-item').length;
+    const rank = count + 1;
+    const rankColor = rank===1?'var(--hot)':rank===2?'var(--accent)':rank===3?'var(--accent2)':'var(--text-muted)';
+    const item = document.createElement('div');
+    item.className = 'panel-line-item';
+    item.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)';
+    item.innerHTML = `
+      <span style="font-size:0.75rem;font-weight:800;width:18px;flex-shrink:0;color:${rankColor}">${rank}</span>
+      <div style="flex:1">
+        <div style="font-size:0.9rem;color:var(--text);line-height:1.45;margin-bottom:3px">${text}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted)">@me · 방금</div>
+      </div>
+      <span style="font-size:0.78rem;font-weight:700;color:var(--hot);flex-shrink:0">♥ 0</span>`;
+    listEl.appendChild(item);
+    // 카운트 업데이트
+    const countEl = document.getElementById('panelLineCount');
+    if (countEl) countEl.textContent = rank;
+    ta.value = ''; ta.style.height = 'auto';
+    showToast('대사가 등록됐어요! ✨');
+  }
+
   function openHotMoment(cardKey) {
     const d = HOT_MOMENTS[cardKey];
     if (!d) return;
     document.getElementById('panelMomentTitle').textContent = d.title;
+    const rankColors = ['var(--hot)','var(--accent)','var(--accent2)'];
     const linesHTML = d.lines.map((l, i) => `
-      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-        <span style="font-size:0.75rem;font-weight:800;width:18px;flex-shrink:0;color:${i===0?'var(--hot)':i===1?'var(--accent)':'var(--accent2)'}">${i+1}</span>
+      <div class="panel-line-item" style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span style="font-size:0.75rem;font-weight:800;width:18px;flex-shrink:0;color:${rankColors[i]||'var(--text-muted)'}">${i+1}</span>
         <div style="flex:1">
           <div style="font-size:0.9rem;color:var(--text);line-height:1.45;margin-bottom:3px">${l.text}</div>
           <div style="font-size:0.7rem;color:var(--text-muted)">${l.user}</div>
         </div>
-        <span style="font-size:0.78rem;font-weight:700;color:var(--hot);flex-shrink:0">♥ ${l.votes}</span>
+        <span style="font-size:0.78rem;font-weight:700;color:var(--hot);flex-shrink:0">♥ ${l.votes.toLocaleString()}</span>
       </div>`).join('');
+    const productsHTML = buildProductsHTML(d.group);
     document.getElementById('panelMomentBody').innerHTML = `
       <div class="panel-moment-img">
         <img src="${d.img}" alt="" onerror="this.style.height='220px';this.style.background='var(--surface2)'">
@@ -1629,17 +1745,22 @@
       </div>
       <div style="display:flex;gap:16px;margin-bottom:16px">
         <span style="font-size:0.82rem;color:var(--text-muted)">♥ ${d.likes} likes</span>
-        <span style="font-size:0.82rem;color:var(--text-muted)">💬 ${d.lineCount} lines</span>
+        <span style="font-size:0.82rem;color:var(--text-muted)">💬 <span id="panelLineCount">${d.lines.length}</span> lines</span>
       </div>
-      <div style="font-size:0.78rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">인기 대사</div>
-      ${linesHTML}
-      <div style="margin-top:16px">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">전체 대사</div>
+      <div id="panelLinesList">${linesHTML}</div>
+      <div style="margin-top:16px;margin-bottom:32px">
         <div class="write-box">
-          <textarea placeholder="대사를 써보세요…" rows="1" oninput="autoResize(this)"></textarea>
-          <button class="send-btn" onclick="showToast('대사가 등록됐어요! ✨')">
+          <textarea placeholder="이 장면에 어울리는 한 문장을 써보세요…" rows="1" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="panelSubmitLine(this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:20px">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">✦ ${d.group} 관련 상품</div>
+        <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none">${productsHTML}</div>
+        <a href="https://globalbunjang.com" target="_blank" style="display:block;margin-top:12px;padding:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:999px;color:#fff;font-size:0.82rem;font-weight:700;text-decoration:none;text-align:center">Global Bunjang에서 더 보기 →</a>
       </div>`;
     document.getElementById('panelMoment').classList.add('open');
   }
