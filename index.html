@@ -331,20 +331,6 @@
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
-  /* ── MOBILE FAB ── */
-  .fab {
-    position: fixed; bottom: 20px; right: 20px; z-index: 150;
-    width: 54px; height: 54px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: none; align-items: center; justify-content: center;
-    box-shadow: 0 4px 20px rgba(192,132,252,0.45);
-    cursor: pointer; border: none; color: #fff;
-    transition: transform .15s;
-  }
-  .fab:hover { transform: scale(1.08); }
-  .fab svg { width: 22px; height: 22px; }
-  @media(max-width: 900px) { .fab { display: flex; } }
-
   /* ── SECTION DIVIDER ── */
   .section-label {
     display: flex; align-items: center; gap: 10px; color: var(--text-muted);
@@ -381,10 +367,6 @@
   <h1>이 장면에 딱 맞는<br><span>한 줄</span>은?</h1>
   <p>좋아하는 이미지를 올리고, 가장 어울리는 한 문장을 경쟁하세요. 최고 대사는 카드로 저장·공유!</p>
   <div class="hero-cta">
-    <button class="btn btn-primary" onclick="openUpload()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      이미지 업로드
-    </button>
     <button class="btn btn-ghost">Hot Moments 보기</button>
   </div>
   <div class="hero-stats">
@@ -698,15 +680,6 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
 
-    <!-- Upload CTA -->
-    <div class="widget upload-widget">
-      <div class="upload-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      </div>
-      <p>내가 만든 이미지, 좋아하는 장면을 올리고 팬들과 대사 배틀!</p>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="openUpload()">이미지 업로드</button>
-    </div>
-
     <!-- Today's Hot -->
     <div class="widget">
       <div class="widget-title">
@@ -793,11 +766,6 @@
 
   </aside>
 </div><!-- /main-wrap -->
-
-<!-- MOBILE FAB -->
-<button class="fab" onclick="openUpload()">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-</button>
 
 <!-- UPLOAD MODAL -->
 <div class="modal-backdrop" id="uploadModal" onclick="closeOnBackdrop(event,'uploadModal')">
@@ -946,19 +914,42 @@
     const ta = box.querySelector('textarea');
     const text = ta.value.trim();
     if (!text) { ta.focus(); return; }
-    const linesSection = btn.closest('.moment-card').querySelector('.lines-section');
+    const card = btn.closest('.moment-card');
+    const linesSection = card.querySelector('.lines-section');
     const linesList = linesSection.querySelectorAll('.line-item');
     const nextRank = linesList.length + 1;
+
+    const rankClasses = ['r1','r2','r3'];
+    const rankClass = nextRank <= 3 ? rankClasses[nextRank-1] : '';
+
     const newItem = document.createElement('div');
     newItem.className = 'line-item';
     newItem.innerHTML = `
-      <span class="line-rank">${nextRank}</span>
+      <span class="line-rank ${rankClass}">${nextRank}</span>
       <div style="flex:1"><div class="line-text">${text}</div><div class="line-user">@me</div></div>
       <button class="vote-btn" onclick="toggleVote(this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
         <span class="vote-count">0</span>
       </button>`;
     linesSection.appendChild(newItem);
+
+    // update count label
+    const countLabel = linesSection.querySelector('.lines-title');
+    countLabel.textContent = `전체 대사 (${nextRank})`;
+
+    // update comment count in actions
+    const commentBtn = card.querySelectorAll('.action-btn')[1];
+    commentBtn.childNodes[commentBtn.childNodes.length - 1].textContent = ' ' + nextRank;
+
+    // if first line, show & populate best-line section
+    if (nextRank === 1) {
+      const bestSection = card.querySelector('.best-line-section');
+      bestSection.style.display = '';
+      bestSection.querySelector('.best-line-content').textContent = text;
+      bestSection.querySelector('.best-by').textContent = 'Best Line by @me';
+      bestSection.querySelector('.best-vote-count').textContent = '0';
+    }
+
     ta.value = '';
     ta.style.height = 'auto';
     showToast('대사가 등록됐어요! 투표를 모아보세요 ✨');
@@ -1005,10 +996,106 @@
     }
   }
 
-  // Upload submit
+  // Upload submit — adds a real card to the feed
   function submitUpload() {
+    const modal = document.getElementById('uploadModal');
+    const imgSrc = document.getElementById('previewImg').src;
+    const inputs = modal.querySelectorAll('.form-input');
+    const group = inputs[0].value.trim() || '알 수 없음';
+    const ship  = inputs[1].value.trim();
+    const hint  = inputs[2].value.trim() || '이 장면에 어울리는 한 마디는?';
+    const selTags = [...modal.querySelectorAll('.tag-chip-pick.sel')].map(t => t.textContent);
+
+    if (!document.getElementById('previewImg').src || document.getElementById('imgPreview').style.display === 'none') {
+      showToast('이미지를 먼저 선택해주세요!');
+      return;
+    }
+
+    const tagsHTML = [
+      `<span class="tag tag-group">#${group}</span>`,
+      ship ? `<span class="tag tag-ship">#${ship}</span>` : '',
+      selTags.length ? `<span class="tag tag-vibe">${selTags[0]}</span>` : ''
+    ].join('');
+
+    const card = document.createElement('div');
+    card.className = 'moment-card';
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="user-info">
+          <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#c084fc)">ME</div>
+          <div class="user-meta">
+            <span class="user-name">@me</span>
+            <span class="post-time">방금 전</span>
+          </div>
+        </div>
+        <div class="card-tags">${tagsHTML}</div>
+      </div>
+      <div class="card-image">
+        <img src="${imgSrc}" alt="moment image" style="width:100%;max-height:480px;object-fit:cover;display:block">
+        <div class="img-overlay">
+          <div class="hint-label">대사 힌트</div>
+          <div class="hint-text">${hint}</div>
+        </div>
+      </div>
+      <div class="best-line-section" style="display:none">
+        <div class="best-label">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Best Line · 1위
+        </div>
+        <div class="best-line">
+          <div class="best-line-text best-line-content"></div>
+          <div class="best-line-meta">
+            <span class="best-by"></span>
+            <span class="best-votes">
+              <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span class="best-vote-count">0</span>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="lines-section">
+        <div class="lines-header">
+          <span class="lines-title">전체 대사 (0)</span>
+          <span class="see-all">모두 보기</span>
+        </div>
+      </div>
+      <div class="write-section">
+        <div class="write-box">
+          <textarea placeholder="이 장면에 가장 어울리는 한 문장을 써보세요…" rows="1" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="submitLine(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="action-btn" onclick="toggleLike(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          0
+        </button>
+        <button class="action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          0
+        </button>
+        <div class="action-spacer"></div>
+        <button class="share-btn" onclick="openShare()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          카드로 저장
+        </button>
+      </div>`;
+
+    const feed = document.querySelector('.feed');
+    feed.insertBefore(card, feed.firstChild);
+
+    // reset modal
+    inputs.forEach(i => i.value = '');
+    modal.querySelectorAll('.tag-chip-pick').forEach(t => t.classList.remove('sel'));
+    document.getElementById('previewImg').src = '';
+    document.getElementById('imgPreview').style.display = 'none';
+    document.getElementById('dropZone').style.display = '';
+
     closeModal('uploadModal');
     showToast('모먼트가 업로드됐어요! 대사 배틀 시작 🎉');
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   // Toast
