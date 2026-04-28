@@ -2037,19 +2037,35 @@
   };
   Object.assign(HOT_MOMENTS, EXTRA_MOMENTS);
 
-  // 각 홈 카드에 key 연결, 대사 3개 초과 숨김, "모두 보기" 클릭 연결
+  // 각 홈 카드에 key 연결, 대사 3개 초과 숨김, 카드 클릭 → 상세 진입
   const CARD_KEYS = ['card1','card2','card3','card4','card5','card6','card7'];
   document.querySelectorAll('.moment-card').forEach((card, idx) => {
     const key = CARD_KEYS[idx];
     if (!key) return;
+
+    // 대사 3개 초과 숨김
     card.querySelectorAll('.line-item').forEach((item, i) => {
       if (i >= 3) item.style.display = 'none';
     });
+
+    // "모두 보기" 클릭 연결
     const seeAll = card.querySelector('.see-all');
     if (seeAll) {
-      seeAll.onclick = () => openHotMoment(key);
+      seeAll.onclick = (e) => { e.stopPropagation(); openHotMoment(key); };
       seeAll.style.cursor = 'pointer';
     }
+
+    // 카드 이미지 + card-top 클릭 시 상세 패널 진입
+    const clickableAreas = [card.querySelector('.card-image'), card.querySelector('.card-top')];
+    clickableAreas.forEach(el => {
+      if (!el) return;
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', (e) => {
+        // 내부 버튼/링크 클릭은 무시
+        if (e.target.closest('button, a, .vote-btn, .tag')) return;
+        openHotMoment(key);
+      });
+    });
   });
 </script>
 </body>
